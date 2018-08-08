@@ -1,0 +1,17 @@
+language: php
+
+php:
+  - 7.1
+
+services:
+  - memcached
+
+before_script:
+  # - pyrus install pear/PHP_CodeSniffer
+  # - phpenv rehash
+  - composer self-update
+  - composer install
+
+script:
+  - phpunit
+  - phpcs --standard=PSR2 --ignore=vendor/ .
