@@ -41,6 +41,12 @@ class LowLevelMemcached
         }
     }
 
+    /**
+     * Удаление ключа из кэша
+     *
+     * @param  string $key
+     * @return bool
+     */
     public function delete(string $key): bool
     {
         // delete <key> [noreply]\r\n
@@ -49,6 +55,11 @@ class LowLevelMemcached
         return trim($this->request($request)) === 'DELETED';
     }
 
+    /**
+     * Фактическое получение данных после вызова getLater()
+     *
+     * @return null|string
+     */
     public function fetch()
     {
         $read = [$this->connection];
@@ -72,6 +83,12 @@ class LowLevelMemcached
         return $this->parseReadResponse($response);
     }
 
+    /**
+     * Синхронный запрос на получение данных из кэша
+     *
+     * @param  string $key
+     * @return null|string
+     */
     public function get(string $key)
     {
         // get <key>\r\n
@@ -80,6 +97,13 @@ class LowLevelMemcached
         return $this->parseReadResponse($this->request($request));
     }
 
+    /**
+     * Асинхронный запрос на получение данных из кэша
+     * Далее необходимо вызвать fetch() для фактического получения данных
+     *
+     * @param  string $key
+     * @return int Количество байт, успешно записанных в сокет
+     */
     public function getLater(string $key): int
     {
         // get <key>\r\n
@@ -88,6 +112,14 @@ class LowLevelMemcached
         return socket_write($this->connection, $request);
     }
 
+    /**
+     * Сохранение переменной в кэше
+     *
+     * @param  string $key
+     * @param  string $data
+     * @param  int    $exptime Срок жизни кэша в секундах (менее 86400) или unixtime (86400+)
+     * @return bool Сохранилось ли значение
+     */
     public function set(string $key, $data, int $exptime = 0): bool
     {
         // set <key> <flags> <exptime> <bytes> [noreply]\r\n<data block>\r\n
@@ -97,6 +129,11 @@ class LowLevelMemcached
         return trim($this->request($request)) === 'STORED';
     }
 
+    /**
+     * Подключение к серверу
+     *
+     * @throws \Exception
+     */
     protected function connect(): void
     {
         if (false === $this->connection = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
@@ -110,6 +147,12 @@ class LowLevelMemcached
         }
     }
 
+    /**
+     * Поиск в ответе сервера значения запрошенной переменной
+     *
+     * @param  string $response
+     * @return null|string
+     */
     protected function parseReadResponse(string $response): ?string
     {
         return preg_match("/^VALUE [^\s]+ \d+ \d+\\r\\n(.+)\\r\\nEND\\r\\n$/ms", $response, $matches)
@@ -117,6 +160,13 @@ class LowLevelMemcached
             : null;
     }
 
+    /**
+     * Ответ от сервера
+     *
+     * @param  resource      $socket
+     * @param  callable|null $callback_on_break
+     * @return string
+     */
     protected function response($socket, callable $callback_on_break = null): string
     {
         $response = '';
@@ -136,6 +186,12 @@ class LowLevelMemcached
         return $response;
     }
 
+    /**
+     * Синхронный запрос к серверу
+     *
+     * @param  string $data
+     * @return string
+     */
     protected function request(string $data = ''): string
     {
         socket_write($this->connection, $data);
