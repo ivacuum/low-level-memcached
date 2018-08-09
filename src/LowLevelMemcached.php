@@ -1,4 +1,6 @@
-<?php namespace Vacuum;
+<?php
+
+namespace Vacuum;
 
 /**
  * Самостоятельное общение с сервером memcached
