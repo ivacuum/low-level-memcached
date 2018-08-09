@@ -19,6 +19,9 @@
       "Tests\\": "tests"
     }
   },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  },
   "config": {
     "preferred-install": "dist",
     "sort-packages": true,
